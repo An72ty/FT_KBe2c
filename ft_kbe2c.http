@@ -1,0 +1,6 @@
+@ft_kbe2c_HostAddress = http://localhost:5269
+
+GET {{ft_kbe2c_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
