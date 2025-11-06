@@ -60,10 +60,23 @@ public class FtKbe2cDbService(FtKbe2cDbContext dbContext) : IDbService
     public async Task Update<T>(Guid id, T entity) where T : class, IEntity
     {
         // await _dbContext.Set<T>().Where(x => x.Id == id).ExecuteUpdateAsync(x => x.SetProperty(c => c.GetType().GetProperty(propertyName).SetValue(c, value)));
-        
-        IEntity _entity = await _dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+
+        IEntity _entity = await _dbContext.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         // entity.GetType().GetProperty(propertyName).SetValue(entity, value);
         _entity = entity;
+        await _dbContext.SaveChangesAsync();
+    }
+    
+    public async Task UpdateByProperties<T>(Guid id, params KeyValuePair<string, object>[] properties) where T : class, IEntity
+    {
+        // await _dbContext.Set<T>().Where(x => x.Id == id).ExecuteUpdateAsync(x => x.SetProperty(c => c.GetType().GetProperty(propertyName).SetValue(c, value)));
+
+        IEntity entity = await _dbContext.Set<T>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        Dictionary<string, object> propertiesDict = properties.ToDictionary(k => k.Key, v => v.Value);
+        foreach (KeyValuePair<string, object> property in propertiesDict)
+        {
+            entity.GetType().GetProperty(property.Key).SetValue(entity, property.Value);
+        }
         await _dbContext.SaveChangesAsync();
     }
 }

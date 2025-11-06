@@ -18,6 +18,9 @@ namespace ft_kbe2c.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -34,7 +37,7 @@ namespace ft_kbe2c.Migrations
                     b.Property<Guid>("QuestionId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TestResultId")
+                    b.Property<Guid?>("TestResultId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Text")
@@ -88,7 +91,7 @@ namespace ft_kbe2c.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -104,7 +107,7 @@ namespace ft_kbe2c.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TestId")
+                    b.Property<Guid?>("TestId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Text")
@@ -158,13 +161,13 @@ namespace ft_kbe2c.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<Guid>("TestId")
+                    b.Property<Guid?>("TestId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TestResultId")
+                    b.Property<Guid?>("TestResultId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -188,9 +191,7 @@ namespace ft_kbe2c.Migrations
 
                     b.HasOne("ft_kbe2c.TestResultEntity", "TestResult")
                         .WithMany("Answers")
-                        .HasForeignKey("TestResultId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TestResultId");
 
                     b.Navigation("Question");
 
@@ -212,9 +213,7 @@ namespace ft_kbe2c.Migrations
                 {
                     b.HasOne("ft_kbe2c.UserEntity", "User")
                         .WithMany("Tests")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -223,9 +222,7 @@ namespace ft_kbe2c.Migrations
                 {
                     b.HasOne("ft_kbe2c.TestEntity", "Test")
                         .WithMany("TestResults")
-                        .HasForeignKey("TestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TestId");
 
                     b.Navigation("Test");
                 });
@@ -234,21 +231,15 @@ namespace ft_kbe2c.Migrations
                 {
                     b.HasOne("ft_kbe2c.TestEntity", "Test")
                         .WithMany("UserTestResults")
-                        .HasForeignKey("TestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TestId");
 
                     b.HasOne("ft_kbe2c.TestResultEntity", "TestResult")
                         .WithMany("UserTestResults")
-                        .HasForeignKey("TestResultId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TestResultId");
 
                     b.HasOne("ft_kbe2c.UserEntity", "User")
                         .WithMany("UserTestResults")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Test");
 

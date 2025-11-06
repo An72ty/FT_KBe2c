@@ -16,9 +16,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMvcCore();
 builder.Services.AddDbContext<FtKbe2cDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseLazyLoadingProxies().UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddScoped<IDbService, FtKbe2cDbService>();
+builder.Services.AddTransient<IDbService, FtKbe2cDbService>();
 builder.Services.AddTransient<JwtProvider>();
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddApiAuthentication(new JwtOptions(){SecretKey="zt,fkhjnnjrujet,bofxnjltkfkkf'ne[eqy.gjlyfpdfybtvcifhg,kznmceffzt,fkhjn'nb[tarjhjdyf[eq", ExpiresHours=12});

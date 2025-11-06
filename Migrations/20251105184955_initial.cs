@@ -32,7 +32,7 @@ namespace ft_kbe2c.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -41,8 +41,7 @@ namespace ft_kbe2c.Migrations
                         name: "FK_Tests_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -70,7 +69,7 @@ namespace ft_kbe2c.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Text = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    TestId = table.Column<Guid>(type: "uuid", nullable: false)
+                    TestId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -79,8 +78,7 @@ namespace ft_kbe2c.Migrations
                         name: "FK_TestResults_Tests_TestId",
                         column: x => x.TestId,
                         principalTable: "Tests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -91,7 +89,7 @@ namespace ft_kbe2c.Migrations
                     Text = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     PointsCost = table.Column<int>(type: "integer", nullable: false),
                     QuestionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TestResultId = table.Column<Guid>(type: "uuid", nullable: false)
+                    TestResultId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -106,8 +104,7 @@ namespace ft_kbe2c.Migrations
                         name: "FK_Answers_TestResults_TestResultId",
                         column: x => x.TestResultId,
                         principalTable: "TestResults",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -116,9 +113,9 @@ namespace ft_kbe2c.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TestId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TestResultId = table.Column<Guid>(type: "uuid", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    TestId = table.Column<Guid>(type: "uuid", nullable: true),
+                    TestResultId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,20 +124,17 @@ namespace ft_kbe2c.Migrations
                         name: "FK_UserTestResults_TestResults_TestResultId",
                         column: x => x.TestResultId,
                         principalTable: "TestResults",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserTestResults_Tests_TestId",
                         column: x => x.TestId,
                         principalTable: "Tests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserTestResults_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(

@@ -6,6 +6,6 @@ public class UserEntity : IEntity
     public string Name { get; set; }
     public string PasswordHash { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
-    public List<TestEntity> Tests { get; set; } = [];
-    public List<UserTestResultEntity> UserTestResults { get; set; } = [];
+    public virtual List<TestEntity> Tests { get; set; } = [];
+    public virtual List<UserTestResultEntity> UserTestResults { get; set; } = [];
 }

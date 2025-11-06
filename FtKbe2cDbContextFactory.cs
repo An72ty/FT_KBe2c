@@ -15,7 +15,7 @@ public class FtKbe2cDbContextFactory
             var builder = new DbContextOptionsBuilder<FtKbe2cDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            builder.UseNpgsql(connectionString);
+            builder.UseLazyLoadingProxies().UseNpgsql(connectionString);
 
             return new FtKbe2cDbContext(builder.Options);
         }

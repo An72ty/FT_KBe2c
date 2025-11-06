@@ -1,6 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ft_kbe2c;
 
@@ -44,6 +46,12 @@ public class FtKbe2cController(IDbService dbService, JwtProvider jwtProvider) : 
             message += $"{testResult.Text} ({testResult.Id})\n";
         }
 
+        message += "\nPassed the test:\n";
+        foreach (UserTestResultEntity userTestResult in test.UserTestResults)
+        {
+            message += $"{userTestResult.User.Name} ({userTestResult.User.Id}) - '{userTestResult.TestResult.Text}' ({userTestResult.TestResult.Id}) ({userTestResult.CreatedAt})\n";
+        }
+
         return Ok(message);
     }
 
@@ -51,6 +59,12 @@ public class FtKbe2cController(IDbService dbService, JwtProvider jwtProvider) : 
     [Authorize]
     public async Task<IActionResult> AnswerTest(Guid test_id, params KeyValuePair<Guid, Guid>[] answers)
     {
+        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+        JwtSecurityToken jsonToken = handler.ReadJwtToken(HttpContext.Request.Cookies["zpftfkczsukf"]);
+        var idToken = jsonToken.Claims.FirstOrDefault(c => c.Type == "Id");
+        UserEntity user = await _dbService.GetOneByProperties<UserEntity>(new KeyValuePair<string, object>("Id", idToken.Value));
+        if (user is null) return Unauthorized();
+
         Dictionary<Guid, Guid> answersDict = answers.ToDictionary();
         TestEntity test = await _dbService.GetOneByProperties<TestEntity>(new KeyValuePair<string, object>("Id", test_id));
         if (test is null) return NotFound();
@@ -69,14 +83,30 @@ public class FtKbe2cController(IDbService dbService, JwtProvider jwtProvider) : 
                 // AnswerEntity answer = await _dbService.GetOneByProperties<AnswerEntity>(new KeyValuePair<string, object>("Id", QuestionAnswer.Value));
                 if (testResult.Answers.Any(x => x.Id == QuestionAnswer.Value))
                 {
-                    testResultsPoints[i] += 1;
+                    testResultsPoints[i] += testResult.Answers.FirstOrDefault(x => x.Id == QuestionAnswer.Value).PointsCost;
                 }
             }
+            i++;
         }
         int maxPoints = testResultsPoints.Max();
         int maxPointsIndex = testResultsPoints.ToList().IndexOf(maxPoints);
+        // TestResultEntity result = await _dbService.GetOneByProperties<TestResultEntity>(new KeyValuePair<string, object>("Id", test.TestResults[maxPointsIndex].Id));
+        TestResultEntity result = test.TestResults[maxPointsIndex];
 
-        return Ok(test.TestResults[maxPointsIndex].Text);
+        UserTestResultEntity userTestResult = new UserTestResultEntity(){UserId=user.Id, TestId=test.Id, TestResultId=result.Id};
+
+        List<UserTestResultEntity> uutr = user.UserTestResults;
+        List<UserTestResultEntity> tutr = test.UserTestResults;
+        List<UserTestResultEntity> rutr = result.UserTestResults;
+        uutr.Append(userTestResult);
+        tutr.Append(userTestResult);
+        rutr.Append(userTestResult);
+        await _dbService.Add(userTestResult);
+        await _dbService.UpdateByProperties<UserEntity>(user.Id, new KeyValuePair<string, object>("UserTestResults", uutr));
+        await _dbService.UpdateByProperties<TestEntity>(test.Id, new KeyValuePair<string, object>("UserTestResults", tutr));
+        await _dbService.UpdateByProperties<TestResultEntity>(result.Id, new KeyValuePair<string, object>("UserTestResults", rutr));
+ 
+        return Ok(result.Text);
     }
 
     [HttpGet("user/{user_id}/")]
@@ -89,7 +119,7 @@ public class FtKbe2cController(IDbService dbService, JwtProvider jwtProvider) : 
         message += $"{user.Name} ({user.Id})\nRegistered: {user.CreatedAt}\n\nTestResults:\n";
         foreach (UserTestResultEntity userTestResult in user.UserTestResults)
         {
-            message += $"{userTestResult.Test.Name} ({userTestResult.Id}) - {userTestResult.TestResult.Test} ({userTestResult.Id}) ({userTestResult.CreatedAt})\n";
+            message += $"{userTestResult.Test.Name} ({userTestResult.Test.Id}) - '{userTestResult.TestResult.Text}' ({userTestResult.TestResult.Id}) ({userTestResult.CreatedAt})\n";
         }
         message += "\n\nCreated tests:\n";
         foreach (TestEntity test in user.Tests)
@@ -117,9 +147,9 @@ public class FtKbe2cController(IDbService dbService, JwtProvider jwtProvider) : 
     }
 
     [HttpPost("register/")]
-    public IActionResult Register(string name, string password)
+    public async Task<IActionResult> Register(string name, string password)
     {
-        _dbService.Add(new UserEntity { Name = name, PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(password) });
+        await _dbService.Add(new UserEntity { Name = name, PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(password) });
 
         return Ok("You've successfuly registered. Now you need to login on 'login/' page");
     }
